@@ -20,37 +20,73 @@ export class GymController {
 
   async create(req: Request, res: Response): Promise<void> {
     const dto = req.body as CreateGymDTO;
-    const gym = await this.createGymUseCase.execute(dto);
-    res.status(201).json(gym);
+    try {
+      const gym = await this.createGymUseCase.execute(dto);
+      res.status(201).json(gym);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create gym' });
+    }
   }
 
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const gym = await this.getGymUseCase.execute(id);
-    res.json(gym);
+    if (!id) {
+      res.status(400).json({ error: 'Gym ID is required' });
+      return;
+    }
+    try {
+      const gym = await this.getGymUseCase.execute(id);
+      res.json(gym);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch gym' });
+    }
   }
 
   async list(req: Request, res: Response): Promise<void> {
-    const gyms = await this.listGymsUseCase.execute();
-    res.json(gyms);
+    try {
+      const gyms = await this.listGymsUseCase.execute();
+      res.json(gyms);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch gyms' });
+    }
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: 'Gym ID is required' });
+      return;
+    }
     const dto = req.body as UpdateGymDTO;
-    const gym = await this.updateGymUseCase.execute(id, dto);
-    res.json(gym);
+    try {
+      const gym = await this.updateGymUseCase.execute(id, dto);
+      res.json(gym);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update gym' });
+    }
   }
 
   async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    await this.deleteGymUseCase.execute(id);
-    res.status(204).send();
+    if (!id) {
+      res.status(400).json({ error: 'Gym ID is required' });
+      return;
+    }
+    try {
+      await this.deleteGymUseCase.execute(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete gym' });
+    }
   }
 
   async listWithAvailableSpots(req: Request, res: Response): Promise<void> {
-    const gyms = await this.listGymsWithAvailableSpotsUseCase.execute();
-    res.json(gyms);
+    try {
+      const gyms = await this.listGymsWithAvailableSpotsUseCase.execute();
+      res.json(gyms);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch gyms with available spots' });
+    }
   }
 }
 

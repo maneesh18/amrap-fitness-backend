@@ -15,26 +15,54 @@ export class MembershipController {
 
   async addUserToGym(req: Request, res: Response): Promise<void> {
     const dto = req.body as CreateMembershipDTO;
-    const membership = await this.addUserToGymUseCase.execute(dto);
-    res.status(201).json(membership);
+    try {
+      const membership = await this.addUserToGymUseCase.execute(dto);
+      res.status(201).json(membership);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to add user to gym' });
+    }
   }
 
   async removeUserFromGym(req: Request, res: Response): Promise<void> {
     const { userId, gymId } = req.params;
-    await this.removeUserFromGymUseCase.execute(userId, gymId);
-    res.status(204).send();
+    if (!userId || !gymId) {
+      res.status(400).json({ error: 'Both user ID and gym ID are required' });
+      return;
+    }
+    try {
+      await this.removeUserFromGymUseCase.execute(userId, gymId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to remove user from gym' });
+    }
   }
 
   async listGymUsers(req: Request, res: Response): Promise<void> {
     const { gymId } = req.params;
-    const users = await this.listGymUsersUseCase.execute(gymId);
-    res.json(users);
+    if (!gymId) {
+      res.status(400).json({ error: 'Gym ID is required' });
+      return;
+    }
+    try {
+      const users = await this.listGymUsersUseCase.execute(gymId);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch gym users' });
+    }
   }
 
   async listUserGyms(req: Request, res: Response): Promise<void> {
     const { userId } = req.params;
-    const gyms = await this.listUserGymsUseCase.execute(userId);
-    res.json(gyms);
+    if (!userId) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
+    try {
+      const gyms = await this.listUserGymsUseCase.execute(userId);
+      res.json(gyms);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch user gyms' });
+    }
   }
 }
 

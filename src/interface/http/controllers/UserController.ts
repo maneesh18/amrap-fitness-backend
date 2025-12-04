@@ -18,32 +18,80 @@ export class UserController {
 
   async create(req: Request, res: Response): Promise<void> {
     const dto = req.body as CreateUserDTO;
-    const user = await this.createUserUseCase.execute(dto);
-    res.status(201).json(user);
+    try {
+      const user = await this.createUserUseCase.execute(dto);
+      res.status(201).json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create user' });
+    }
   }
 
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const user = await this.getUserUseCase.execute(id);
-    res.json(user);
+    if (!id) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
+    try {
+      const user = await this.getUserUseCase.execute(id);
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
   }
 
   async list(req: Request, res: Response): Promise<void> {
-    const users = await this.listUsersUseCase.execute();
-    res.json(users);
+    try {
+      const users = await this.listUsersUseCase.execute();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
     const dto = req.body as UpdateUserDTO;
-    const user = await this.updateUserUseCase.execute(id, dto);
-    res.json(user);
+    try {
+      const user = await this.updateUserUseCase.execute(id, dto);
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update user' });
+    }
   }
 
   async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    await this.deleteUserUseCase.execute(id);
-    res.status(204).send();
+    if (!id) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
+    try {
+      // First check if user exists
+      const user = await this.getUserUseCase.execute(id);
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      
+      // If user exists, proceed with deletion
+      await this.deleteUserUseCase.execute(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
   }
 }
 
