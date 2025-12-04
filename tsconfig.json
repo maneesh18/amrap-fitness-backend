@@ -39,5 +39,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "prisma.config.ts",
+    "prisma/**/*"
+  ]
 }
