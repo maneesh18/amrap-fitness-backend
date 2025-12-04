@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FitnessGoal {
+  strength
+  hypertrophy
+  endurance
+}
+
+enum GymType {
+  commercial
+  home
+  apartment
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  dateOfBirth  DateTime    @db.Date
+  fitnessGoal  FitnessGoal
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  memberships  Membership[]
+
+  @@map("users")
+}
+
+model Gym {
+  id           String       @id @default(uuid())
+  name         String
+  type         GymType
+  location     String?
+  capacity     Int?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  memberships  Membership[]
+
+  @@map("gyms")
+}
+
+model Membership {
+  id        String   @id @default(uuid())
+  userId    String
+  gymId     String
+  joinDate  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gym       Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gymId])
+  @@map("memberships")
+}
