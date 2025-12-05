@@ -23,11 +23,19 @@ export function createApp(): Express {
   // Swagger documentation
   const swaggerUiOptions = {
     swaggerOptions: {
-      url: '/api-docs/swagger.json',
+      url: '/api/api-docs/swagger.json',
     },
   };
   
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  // Serve Swagger UI at /api-docs
+  app.use('/api-docs', swaggerUi.serve);
+  app.get('/api-docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  
+  // Serve Swagger JSON
+  app.get('/api-docs/swagger.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  });
 
   // Health check
   app.get('/health', (req, res) => {
