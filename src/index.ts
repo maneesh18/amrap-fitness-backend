@@ -1,5 +1,5 @@
 import { prisma } from './infrastructure/database/prisma';
-import { createApp } from './app';
+import app from './app';
 
 const PORT = process.env.PORT || 3001;
 
@@ -9,8 +9,7 @@ async function startServer() {
     await prisma.$connect();
     console.log('Database connected successfully');
 
-    // Create and start Express app
-    const app = createApp();
+    // Start Express app
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
       console.log(`API Documentation: http://localhost:${PORT}/api-docs`);

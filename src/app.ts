@@ -8,12 +8,13 @@ import { createMembershipRoutes } from './interface/http/routes/membershipRoutes
 import { errorHandler } from './interface/http/middleware/errorHandler';
 import { userController, gymController, membershipController } from './application/container';
 
+const app = express();
+
 export function createApp(): Express {
-  const app = express();
 
   // Middleware
   app.use(cors({
-    origin: process.env.FRONTEND_URL || 'https://amrap-fitness-frontend-ld97.vercel.app/',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   }));
   app.use(express.json());
@@ -43,4 +44,7 @@ export function createApp(): Express {
 
   return app;
 }
+
+// Export the app instance by default
+export default createApp();
 
