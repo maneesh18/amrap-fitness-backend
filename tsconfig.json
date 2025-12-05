@@ -43,6 +43,9 @@
   "exclude": [
     "node_modules",
     "prisma.config.ts",
-    "prisma/**/*"
+    "prisma/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "src/**/__tests__/**/*"
   ]
 }
