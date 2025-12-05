@@ -1,12 +1,1 @@
-{
-  "version": 2,
-  "builds": [
-    { "src": "src/index.ts", "use": "@vercel/node" },
-    { "src": "node_modules/swagger-ui-dist/*", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api-docs/(.*)", "dest": "/api" },
-    { "src": "/api-docs", "dest": "/api/api-docs" },
-    { "src": "/(.*)", "dest": "/api" }
-  ]
-}
+{ "version": 2, "rewrites": [{ "source": "/(.*)", "destination": "/api" }] }

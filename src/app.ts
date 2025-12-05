@@ -22,30 +22,12 @@ export function createApp(): Express {
 
   // Swagger documentation
   const swaggerUiOptions = {
-    explorer: true,
     swaggerOptions: {
-      url: process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}/api-docs/swagger.json`
-        : '/api-docs/swagger.json',
-      validatorUrl: null,
+      url: '/api-docs/swagger.json',
     },
   };
   
-  // Serve Swagger UI
-  app.get('/api-docs', (req, res) => {
-    res.send(
-      swaggerUi.generateHTML(swaggerSpec, swaggerUiOptions)
-    );
-  });
-  
-  // Serve Swagger JSON
-  app.get('/api-docs/swagger.json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-  });
-  
-  // Serve Swagger UI assets
-  app.use('/api-docs', swaggerUi.serveFiles(undefined, swaggerUiOptions));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
   // Health check
   app.get('/health', (req, res) => {
