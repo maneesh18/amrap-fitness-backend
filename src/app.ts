@@ -5,8 +5,10 @@ import { swaggerSpec } from './interface/docs/swagger';
 import { createUserRoutes } from './interface/http/routes/userRoutes';
 import { createGymRoutes } from './interface/http/routes/gymRoutes';
 import { createMembershipRoutes } from './interface/http/routes/membershipRoutes';
+import { createAuthRoutes } from './interface/http/routes/authRoutes';
 import { errorHandler } from './interface/http/middleware/errorHandler';
-import { userController, gymController, membershipController } from './application/container';
+import { userController, gymController, membershipController, authController } from './interface/container';
+import { AuthMiddleware } from './interface/http/middleware/AuthMiddleware';
 
 const app = express();
 
@@ -34,7 +36,9 @@ export function createApp(): Express {
     res.json({ status: 'ok' });
   });
 
-  // Routes
+  app.use('/api', AuthMiddleware);
+// 2. Create Router
+  app.use('/auth', createAuthRoutes(authController));
   app.use('/api/users', createUserRoutes(userController));
   app.use('/api/gyms', createGymRoutes(gymController));
   app.use('/api/memberships', createMembershipRoutes(membershipController));

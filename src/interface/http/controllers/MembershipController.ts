@@ -4,6 +4,13 @@ import { RemoveUserFromGymUseCase } from '../../../application/use-cases/RemoveU
 import { ListGymUsersUseCase } from '../../../application/use-cases/ListGymUsersUseCase';
 import { ListUserGymsUseCase } from '../../../application/use-cases/ListUserGymsUseCase';
 import { CreateMembershipDTO } from '../../../application/dtos/CreateMembershipDTO';
+import { 
+  RequiredFieldError, 
+  OperationFailedError, 
+  EntityNotFoundError,
+  MembershipAlreadyExistsError,
+  GymCapacityExceededError
+} from '../../../domain/errors/DomainError';
 
 export class MembershipController {
   constructor(
@@ -15,53 +22,67 @@ export class MembershipController {
 
   async addUserToGym(req: Request, res: Response): Promise<void> {
     const dto = req.body as CreateMembershipDTO;
+    if (!dto.userId || !dto.gymId) {
+      throw new RequiredFieldError('User ID and Gym ID', 'membership');
+    }
     try {
       const membership = await this.addUserToGymUseCase.execute(dto);
       res.status(201).json(membership);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to add user to gym' });
+      if (error instanceof EntityNotFoundError || 
+          error instanceof MembershipAlreadyExistsError ||
+          error instanceof GymCapacityExceededError) {
+        throw error;
+      }
+      throw new OperationFailedError('add user to gym', 'membership', error instanceof Error ? error.message : undefined);
     }
   }
 
   async removeUserFromGym(req: Request, res: Response): Promise<void> {
     const { userId, gymId } = req.params;
     if (!userId || !gymId) {
-      res.status(400).json({ error: 'Both user ID and gym ID are required' });
-      return;
+      throw new RequiredFieldError('User ID and Gym ID', 'membership removal');
     }
     try {
       await this.removeUserFromGymUseCase.execute(userId, gymId);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to remove user from gym' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('remove user from gym', 'membership', error instanceof Error ? error.message : undefined);
     }
   }
 
   async listGymUsers(req: Request, res: Response): Promise<void> {
     const { gymId } = req.params;
     if (!gymId) {
-      res.status(400).json({ error: 'Gym ID is required' });
-      return;
+      throw new RequiredFieldError('Gym ID', 'gym users list');
     }
     try {
       const users = await this.listGymUsersUseCase.execute(gymId);
       res.json(users);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch gym users' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('fetch', 'gym users', error instanceof Error ? error.message : undefined);
     }
   }
 
   async listUserGyms(req: Request, res: Response): Promise<void> {
     const { userId } = req.params;
     if (!userId) {
-      res.status(400).json({ error: 'User ID is required' });
-      return;
+      throw new RequiredFieldError('User ID', 'user gyms list');
     }
     try {
       const gyms = await this.listUserGymsUseCase.execute(userId);
       res.json(gyms);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch user gyms' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('fetch', 'user gyms', error instanceof Error ? error.message : undefined);
     }
   }
 }

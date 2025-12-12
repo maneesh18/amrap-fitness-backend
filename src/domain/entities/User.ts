@@ -4,6 +4,11 @@ export enum FitnessGoal {
   ENDURANCE = 'endurance',
 }
 
+export enum UserRole {
+  USER = 'USER',
+  MANAGER = 'MANAGER'
+}
+
 export class User {
   constructor(
     public id: string,
@@ -11,23 +16,27 @@ export class User {
     public email: string,
     public dateOfBirth: Date,
     public fitnessGoal: FitnessGoal,
+    public role: UserRole,
     public createdAt: Date,
     public updatedAt: Date
   ) {}
 
   static create(
+    id: string,
     name: string,
     email: string,
     dateOfBirth: Date,
-    fitnessGoal: FitnessGoal
+    fitnessGoal: FitnessGoal,
+    role: UserRole = UserRole.USER
   ): User {
     const now = new Date();
     return new User(
-      '',
+      id,
       name,
       email,
       dateOfBirth,
       fitnessGoal,
+      role,
       now,
       now
     );
@@ -50,4 +59,3 @@ export class User {
     this.updatedAt = new Date();
   }
 }
-

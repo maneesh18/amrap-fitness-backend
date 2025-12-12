@@ -1,5 +1,5 @@
-import { IsString, IsEmail, IsDateString, IsEnum } from 'class-validator';
-import { FitnessGoal } from '../../domain/entities/User';
+import { IsString, IsEmail, IsDateString, IsEnum, IsBoolean } from 'class-validator';
+import { FitnessGoal, UserRole } from '../../domain/entities/User';
 
 export class CreateUserDTO {
   @IsString()
@@ -13,5 +13,8 @@ export class CreateUserDTO {
 
   @IsEnum(FitnessGoal)
   fitnessGoal!: FitnessGoal;
+  
+  @IsBoolean()
+  isManager: boolean = false;
 }
 

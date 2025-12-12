@@ -1,4 +1,4 @@
-import { User, FitnessGoal } from '../../domain/entities/User';
+import { User, FitnessGoal, UserRole } from '../../domain/entities/User';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { prisma } from '../database/prisma';
 
@@ -20,19 +20,15 @@ export class UserRepository implements IUserRepository {
 
   async save(user: User): Promise<User> {
     const data = {
+      id: user.id,
       name: user.name,
       email: user.email,
       dateOfBirth: user.dateOfBirth,
+      role: user.role,
       fitnessGoal: user.fitnessGoal.toLowerCase() as 'strength' | 'hypertrophy' | 'endurance',
     };
-
-    const saved = user.id
-      ? await prisma.user.update({
-          where: { id: user.id },
-          data,
-        })
-      : await prisma.user.create({ data });
-
+    // console.log('Saving user data:', data);
+    const saved = await prisma.user.create({ data });
     return this.toDomain(saved);
   }
 
@@ -50,6 +46,7 @@ export class UserRepository implements IUserRepository {
     email: string;
     dateOfBirth: Date;
     fitnessGoal: string;
+    role: UserRole
     createdAt: Date;
     updatedAt: Date;
   }): User {
@@ -59,6 +56,7 @@ export class UserRepository implements IUserRepository {
       data.email,
       data.dateOfBirth,
       data.fitnessGoal.toUpperCase() as FitnessGoal,
+      data.role,
       data.createdAt,
       data.updatedAt
     );

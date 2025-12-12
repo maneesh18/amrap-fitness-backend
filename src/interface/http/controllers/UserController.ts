@@ -6,6 +6,15 @@ import { UpdateUserUseCase } from '../../../application/use-cases/UpdateUserUseC
 import { DeleteUserUseCase } from '../../../application/use-cases/DeleteUserUseCase';
 import { CreateUserDTO } from '../../../application/dtos/CreateUserDTO';
 import { UpdateUserDTO } from '../../../application/dtos/UpdateUserDTO';
+import { 
+  RequiredFieldError, 
+  OperationFailedError, 
+  EntityNotFoundError,
+  CreationFailedError,
+  DuplicateEntityError,
+  UnauthorizedError
+} from '../../../domain/errors/DomainError';
+import { UserRole, User } from '../../../domain/entities/User';
 
 export class UserController {
   constructor(
@@ -18,79 +27,104 @@ export class UserController {
 
   async create(req: Request, res: Response): Promise<void> {
     const dto = req.body as CreateUserDTO;
+    if (!dto.email || !dto.name) {
+      throw new RequiredFieldError('Email and Name', 'user');
+    }
     try {
       const user = await this.createUserUseCase.execute(dto);
       res.status(201).json(user);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create user' });
+      if (error instanceof DuplicateEntityError) {
+        throw error;
+      }
+      throw new CreationFailedError('user', error instanceof Error ? error.message : undefined);
     }
   }
 
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'User ID is required' });
-      return;
+      throw new RequiredFieldError('User ID', 'user');
     }
     try {
       const user = await this.getUserUseCase.execute(id);
       if (!user) {
-        res.status(404).json({ error: 'User not found' });
-        return;
+        throw new EntityNotFoundError('User', id);
       }
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch user' });
+      if (error instanceof EntityNotFoundError || error instanceof RequiredFieldError) {
+        throw error;
+      }
+      throw new OperationFailedError('fetch', 'user', error instanceof Error ? error.message : undefined);
     }
   }
 
   async list(req: Request, res: Response): Promise<void> {
     try {
-      const users = await this.listUsersUseCase.execute();
+      // console.log('Current user ID:', req.user?.id);
+      const currentUserId = req.user?.id;
+      if (!currentUserId) {
+        throw new UnauthorizedError('Unauthorized');
+        return;
+      }
+      const user = await this.getUserUseCase.execute(currentUserId);
+      let users: User[] = [user];
+      if(user.role === UserRole.MANAGER) {
+        users = await this.listUsersUseCase.execute();
+      }
       res.json(users);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch users' });
+      throw new OperationFailedError('list', 'users', error instanceof Error ? error.message : undefined);
     }
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'User ID is required' });
-      return;
+      throw new RequiredFieldError('User ID', 'user');
     }
     const dto = req.body as UpdateUserDTO;
+    if (Object.keys(dto).length === 0) {
+      throw new RequiredFieldError('At least one field to update', 'user');
+    }
     try {
       const user = await this.updateUserUseCase.execute(id, dto);
       if (!user) {
-        res.status(404).json({ error: 'User not found' });
-        return;
+        throw new EntityNotFoundError('User', id);
       }
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update user' });
+      if (error instanceof EntityNotFoundError || 
+          error instanceof RequiredFieldError ||
+          error instanceof DuplicateEntityError) {
+        throw error;
+      }
+      throw new OperationFailedError('update', 'user', error instanceof Error ? error.message : undefined);
     }
   }
 
   async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'User ID is required' });
-      return;
+      throw new RequiredFieldError('User ID', 'user');
     }
     try {
       // First check if user exists
       const user = await this.getUserUseCase.execute(id);
       if (!user) {
-        res.status(404).json({ error: 'User not found' });
-        return;
+        throw new EntityNotFoundError('User', id);
       }
       
       // If user exists, proceed with deletion
       await this.deleteUserUseCase.execute(id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete user' });
+      if (error instanceof EntityNotFoundError || 
+          error instanceof RequiredFieldError) {
+        throw error;
+      }
+      throw new OperationFailedError('delete', 'user', error instanceof Error ? error.message : undefined);
     }
   }
 }

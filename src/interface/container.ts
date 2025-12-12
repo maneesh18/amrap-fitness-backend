@@ -1,31 +1,37 @@
 import { UserRepository } from '../infrastructure/repositories/UserRepository';
 import { GymRepository } from '../infrastructure/repositories/GymRepository';
 import { MembershipRepository } from '../infrastructure/repositories/MembershipRepository';
-import { CreateUserUseCase } from './use-cases/CreateUserUseCase';
-import { GetUserUseCase } from './use-cases/GetUserUseCase';
-import { ListUsersUseCase } from './use-cases/ListUsersUseCase';
-import { UpdateUserUseCase } from './use-cases/UpdateUserUseCase';
-import { DeleteUserUseCase } from './use-cases/DeleteUserUseCase';
-import { CreateGymUseCase } from './use-cases/CreateGymUseCase';
-import { GetGymUseCase } from './use-cases/GetGymUseCase';
-import { ListGymsUseCase } from './use-cases/ListGymsUseCase';
-import { UpdateGymUseCase } from './use-cases/UpdateGymUseCase';
-import { DeleteGymUseCase } from './use-cases/DeleteGymUseCase';
-import { AddUserToGymUseCase } from './use-cases/AddUserToGymUseCase';
-import { RemoveUserFromGymUseCase } from './use-cases/RemoveUserFromGymUseCase';
-import { ListGymUsersUseCase } from './use-cases/ListGymUsersUseCase';
-import { ListUserGymsUseCase } from './use-cases/ListUserGymsUseCase';
-import { ListGymsWithAvailableSpotsUseCase } from './use-cases/ListGymsWithAvailableSpotsUseCase';
+import { CreateUserUseCase } from '../application/use-cases/CreateUserUseCase';
+import { GetUserUseCase } from '../application/use-cases/GetUserUseCase';
+import { ListUsersUseCase } from '../application/use-cases/ListUsersUseCase';
+import { UpdateUserUseCase } from '../application/use-cases/UpdateUserUseCase';
+import { DeleteUserUseCase } from '../application/use-cases/DeleteUserUseCase';
+import { CreateGymUseCase } from '../application/use-cases/CreateGymUseCase';
+import { GetGymUseCase } from '../application/use-cases/GetGymUseCase';
+import { ListGymsUseCase } from '../application/use-cases/ListGymsUseCase';
+import { UpdateGymUseCase } from '../application/use-cases/UpdateGymUseCase';
+import { DeleteGymUseCase } from '../application/use-cases/DeleteGymUseCase';
+import { AddUserToGymUseCase } from '../application/use-cases/AddUserToGymUseCase';
+import { RemoveUserFromGymUseCase } from '../application/use-cases/RemoveUserFromGymUseCase';
+import { ListGymUsersUseCase } from '../application/use-cases/ListGymUsersUseCase';
+import { ListUserGymsUseCase } from '../application/use-cases/ListUserGymsUseCase';
+import { ListGymsWithAvailableSpotsUseCase } from '../application/use-cases/ListGymsWithAvailableSpotsUseCase';
+import { SignUpUser } from '../infrastructure/use-cases/SignUpUser';
+import { SignInUser } from '../infrastructure/use-cases/SignInUser';
+import { SignOutUser } from '../infrastructure/use-cases/SignOutUser';
+import { VerifyUser } from '../infrastructure/use-cases/VerifyUser';
 import { UserController } from '../interface/http/controllers/UserController';
 import { GymController } from '../interface/http/controllers/GymController';
 import { MembershipController } from '../interface/http/controllers/MembershipController';
+import { AuthController } from '../interface/http/controllers/AuthController';
+import { CognitoAuthService } from '../infrastructure/services/CognitoAuthService';
 
-// Repositories
+// Initialize repositories
 const userRepository = new UserRepository();
 const gymRepository = new GymRepository();
 const membershipRepository = new MembershipRepository();
 
-// Use Cases
+// Initialize use cases
 const createUserUseCase = new CreateUserUseCase(userRepository);
 const getUserUseCase = new GetUserUseCase(userRepository);
 const listUsersUseCase = new ListUsersUseCase(userRepository);
@@ -39,6 +45,9 @@ const updateGymUseCase = new UpdateGymUseCase(gymRepository);
 const deleteGymUseCase = new DeleteGymUseCase(gymRepository);
 const listGymsWithAvailableSpotsUseCase = new ListGymsWithAvailableSpotsUseCase(gymRepository);
 
+
+const authService = new CognitoAuthService();
+
 const addUserToGymUseCase = new AddUserToGymUseCase(
   membershipRepository,
   gymRepository,
@@ -48,7 +57,11 @@ const removeUserFromGymUseCase = new RemoveUserFromGymUseCase(membershipReposito
 const listGymUsersUseCase = new ListGymUsersUseCase(membershipRepository, gymRepository);
 const listUserGymsUseCase = new ListUserGymsUseCase(membershipRepository, userRepository);
 
-// Controllers
+const signUpUser = new SignUpUser(authService, userRepository);
+const signInUser = new SignInUser(authService);
+const verifyUser = new VerifyUser(authService);
+const signOutUser = new SignOutUser(authService);
+
 export const userController = new UserController(
   createUserUseCase,
   getUserUseCase,
@@ -73,3 +86,9 @@ export const membershipController = new MembershipController(
   listUserGymsUseCase
 );
 
+export const authController = new AuthController(
+  signUpUser,
+  signInUser,
+  signOutUser,
+  verifyUser,
+);

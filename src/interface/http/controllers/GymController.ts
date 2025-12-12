@@ -7,6 +7,12 @@ import { DeleteGymUseCase } from '../../../application/use-cases/DeleteGymUseCas
 import { ListGymsWithAvailableSpotsUseCase } from '../../../application/use-cases/ListGymsWithAvailableSpotsUseCase';
 import { CreateGymDTO } from '../../../application/dtos/CreateGymDTO';
 import { UpdateGymDTO } from '../../../application/dtos/UpdateGymDTO';
+import { 
+  RequiredFieldError, 
+  CreationFailedError, 
+  OperationFailedError,
+  EntityNotFoundError 
+} from '../../../domain/errors/DomainError';
 
 export class GymController {
   constructor(
@@ -24,21 +30,26 @@ export class GymController {
       const gym = await this.createGymUseCase.execute(dto);
       res.status(201).json(gym);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create gym' });
+      if (error instanceof EntityNotFoundError || error instanceof RequiredFieldError) {
+        throw error;
+      }
+      throw new CreationFailedError('gym', error instanceof Error ? error.message : undefined);
     }
   }
 
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'Gym ID is required' });
-      return;
+      throw new RequiredFieldError('Gym ID', 'gym');
     }
     try {
       const gym = await this.getGymUseCase.execute(id);
       res.json(gym);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch gym' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('fetch', 'gym', error instanceof Error ? error.message : undefined);
     }
   }
 
@@ -47,36 +58,40 @@ export class GymController {
       const gyms = await this.listGymsUseCase.execute();
       res.json(gyms);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch gyms' });
+      throw new OperationFailedError('list', 'gyms', error instanceof Error ? error.message : undefined);
     }
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'Gym ID is required' });
-      return;
+      throw new RequiredFieldError('Gym ID', 'gym');
     }
     const dto = req.body as UpdateGymDTO;
     try {
       const gym = await this.updateGymUseCase.execute(id, dto);
       res.json(gym);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update gym' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('update', 'gym', error instanceof Error ? error.message : undefined);
     }
   }
 
   async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     if (!id) {
-      res.status(400).json({ error: 'Gym ID is required' });
-      return;
+      throw new RequiredFieldError('Gym ID', 'gym');
     }
     try {
       await this.deleteGymUseCase.execute(id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete gym' });
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('delete', 'gym', error instanceof Error ? error.message : undefined);
     }
   }
 
@@ -85,7 +100,7 @@ export class GymController {
       const gyms = await this.listGymsWithAvailableSpotsUseCase.execute();
       res.json(gyms);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch gyms with available spots' });
+      throw new OperationFailedError('fetch', 'gyms with available spots', error instanceof Error ? error.message : undefined);
     }
   }
 }
