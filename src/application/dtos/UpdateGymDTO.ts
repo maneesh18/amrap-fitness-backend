@@ -18,5 +18,9 @@ export class UpdateGymDTO {
   @Min(1)
   @IsOptional()
   capacity?: number | null;
+  
+  @IsString()
+  @IsOptional()
+  userId!: string;
 }
 

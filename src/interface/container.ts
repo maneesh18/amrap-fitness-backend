@@ -8,6 +8,7 @@ import { UpdateUserUseCase } from '../application/use-cases/UpdateUserUseCase';
 import { DeleteUserUseCase } from '../application/use-cases/DeleteUserUseCase';
 import { CreateGymUseCase } from '../application/use-cases/CreateGymUseCase';
 import { GetGymUseCase } from '../application/use-cases/GetGymUseCase';
+import { GetGymsByUserIdUseCase } from '../application/use-cases/GetGymsByUserIdUseCase';
 import { ListGymsUseCase } from '../application/use-cases/ListGymsUseCase';
 import { UpdateGymUseCase } from '../application/use-cases/UpdateGymUseCase';
 import { DeleteGymUseCase } from '../application/use-cases/DeleteGymUseCase';
@@ -38,10 +39,11 @@ const listUsersUseCase = new ListUsersUseCase(userRepository);
 const updateUserUseCase = new UpdateUserUseCase(userRepository);
 const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 
-const createGymUseCase = new CreateGymUseCase(gymRepository);
+const createGymUseCase = new CreateGymUseCase(gymRepository, userRepository);
 const getGymUseCase = new GetGymUseCase(gymRepository);
+const getGymsByUserIdUseCase = new GetGymsByUserIdUseCase(gymRepository);
 const listGymsUseCase = new ListGymsUseCase(gymRepository);
-const updateGymUseCase = new UpdateGymUseCase(gymRepository);
+const updateGymUseCase = new UpdateGymUseCase(gymRepository, userRepository);
 const deleteGymUseCase = new DeleteGymUseCase(gymRepository);
 const listGymsWithAvailableSpotsUseCase = new ListGymsWithAvailableSpotsUseCase(gymRepository);
 
@@ -73,9 +75,11 @@ export const userController = new UserController(
 export const gymController = new GymController(
   createGymUseCase,
   getGymUseCase,
+  getGymsByUserIdUseCase,
   listGymsUseCase,
   updateGymUseCase,
   deleteGymUseCase,
+  getUserUseCase,
   listGymsWithAvailableSpotsUseCase
 );
 

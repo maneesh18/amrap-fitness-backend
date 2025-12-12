@@ -62,7 +62,7 @@ export function createGymRoutes(gymController: GymController): Router {
    *                 $ref: '#/components/schemas/Gym'
    */
   router.get('/', (req, res, next) => {
-    gymController.list(req, res).catch(next);
+    gymController.listMyGyms(req, res).catch(next);
   });
 
   /**

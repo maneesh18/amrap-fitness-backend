@@ -17,7 +17,7 @@ export class MembershipController {
     private addUserToGymUseCase: AddUserToGymUseCase,
     private removeUserFromGymUseCase: RemoveUserFromGymUseCase,
     private listGymUsersUseCase: ListGymUsersUseCase,
-    private listUserGymsUseCase: ListUserGymsUseCase
+    private listUserGymsUseCase: ListUserGymsUseCase,
   ) {}
 
   async addUserToGym(req: Request, res: Response): Promise<void> {
@@ -27,7 +27,7 @@ export class MembershipController {
     }
     try {
       const membership = await this.addUserToGymUseCase.execute(dto);
-      res.status(201).json(membership);
+      res.status(200).json(membership);
     } catch (error) {
       if (error instanceof EntityNotFoundError || 
           error instanceof MembershipAlreadyExistsError ||

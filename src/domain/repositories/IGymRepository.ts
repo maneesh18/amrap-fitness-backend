@@ -3,6 +3,7 @@ import { Gym } from '../entities/Gym';
 export interface IGymRepository {
   findById(id: string): Promise<Gym | null>;
   findAll(): Promise<Gym[]>;
+  findByUserId(userId: string): Promise<Gym[] | []>;
   save(gym: Gym): Promise<Gym>;
   update(gym: Gym): Promise<Gym>;
   delete(id: string): Promise<void>;

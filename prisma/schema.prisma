@@ -37,6 +37,7 @@ model User {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   memberships  Membership[]
+  gyms         Gym[]
 
   @@map("users")
 }
@@ -47,6 +48,8 @@ model Gym {
   type         GymType
   location     String?
   capacity     Int?
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   memberships  Membership[]

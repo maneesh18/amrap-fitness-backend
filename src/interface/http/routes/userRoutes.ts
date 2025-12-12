@@ -54,7 +54,7 @@ export function createUserRoutes(userController: UserController): Router {
 
   /**
    * @swagger
-   * /api/users:
+   * /api/users/all-users:
    *   get:
    *     summary: List all users
    *     tags: [Users]
@@ -68,7 +68,7 @@ export function createUserRoutes(userController: UserController): Router {
    *               items:
    *                 $ref: '#/components/schemas/User'
    */
-  router.get('/', (req, res, next) => {
+  router.get('/all-users', (req, res, next) => {
     userController.list(req, res).catch(next);
   });
 
@@ -162,6 +162,30 @@ export function createUserRoutes(userController: UserController): Router {
    */
   router.delete('/:id', (req, res, next) => {
     userController.delete(req, res).catch(next);
+  });
+
+  /**
+   * @swagger
+   * /api/users:
+   *   get:
+   *     summary: Get current authenticated user's details
+   *     tags: [Users]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Current user details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Unauthorized - User not authenticated
+   *       404:
+   *         description: User not found
+   */
+  router.get('/', (req, res, next) => {
+    userController.getCurrentUser(req, res).catch(next);
   });
 
   return router;

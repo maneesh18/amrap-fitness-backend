@@ -127,5 +127,25 @@ export class UserController {
       throw new OperationFailedError('delete', 'user', error instanceof Error ? error.message : undefined);
     }
   }
+
+  async getCurrentUser(req: Request, res: Response): Promise<void> {
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      throw new UnauthorizedError('User not authenticated');
+    }
+    
+    try {
+      const user = await this.getUserUseCase.execute(currentUserId);
+      if (!user) {
+        throw new EntityNotFoundError('User', currentUserId);
+      }
+      res.json(user);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw error;
+      }
+      throw new OperationFailedError('fetch', 'current user', error instanceof Error ? error.message : undefined);
+    }
+  }
 }
 

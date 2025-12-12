@@ -11,6 +11,7 @@ export class Gym {
     public type: GymType,
     public location: string | null,
     public capacity: number | null,
+    public userId: string,
     public createdAt: Date,
     public updatedAt: Date
   ) {}
@@ -18,6 +19,7 @@ export class Gym {
   static create(
     name: string,
     type: GymType,
+    userId: string,
     location?: string,
     capacity?: number
   ): Gym {
@@ -28,6 +30,7 @@ export class Gym {
       type,
       location || null,
       capacity || null,
+      userId,
       now,
       now
     );

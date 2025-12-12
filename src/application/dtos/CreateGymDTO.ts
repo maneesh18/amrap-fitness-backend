@@ -16,5 +16,9 @@ export class CreateGymDTO {
   @Min(1)
   @IsOptional()
   capacity?: number;
+
+  @IsString()
+  @IsOptional()
+  userId?: string;
 }
 

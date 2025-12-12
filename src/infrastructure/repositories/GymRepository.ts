@@ -1,3 +1,4 @@
+// src/infrastructure/repositories/GymRepository.ts
 import { Gym, GymType } from '../../domain/entities/Gym';
 import { IGymRepository } from '../../domain/repositories/IGymRepository';
 import { prisma } from '../database/prisma';
@@ -7,6 +8,11 @@ export class GymRepository implements IGymRepository {
     const data = await prisma.gym.findUnique({ where: { id } });
     return data ? this.toDomain(data) : null;
   }
+  
+  async findByUserId(userId: string): Promise<Gym[] | []> {
+    const data = await prisma.gym.findMany({ where: { userId } });
+    return data ? data.map((item) => this.toDomain(item)):[];
+  }
 
   async findAll(): Promise<Gym[]> {
     const data = await prisma.gym.findMany();
@@ -14,19 +20,28 @@ export class GymRepository implements IGymRepository {
   }
 
   async save(gym: Gym): Promise<Gym> {
-    const data = {
+    const { userId, ...gymData } = {
       name: gym.name,
       type: gym.type.toLowerCase() as 'commercial' | 'home' | 'apartment',
       location: gym.location,
       capacity: gym.capacity,
+      userId: gym.userId
     };
 
     const saved = gym.id
       ? await prisma.gym.update({
           where: { id: gym.id },
-          data,
+          data: gymData, // For update, we usually don't change the owner (userId)
         })
-      : await prisma.gym.create({ data });
+      : await prisma.gym.create({ 
+          data: {
+            ...gymData, // <--- This now DOES NOT contain 'userId', fixing the error!
+            user: { 
+              connect: { id: userId } // We allow 'connect' to handle the linking
+            }
+          },
+          include: { user: true }
+        });
 
     return this.toDomain(saved);
   }
@@ -56,10 +71,8 @@ export class GymRepository implements IGymRepository {
       })
     );
 
-    // Filter out gyms with no capacity (null availableSpots means unlimited)
-    // and sort by available spots (most first), with unlimited capacity last
     return result
-      .filter((item) => item.availableSpots !== null && item.availableSpots > 0)
+      .filter((item) => item.availableSpots === null || item.availableSpots > 0)
       .sort((a, b) => {
         if (a.availableSpots === null) return 1;
         if (b.availableSpots === null) return -1;
@@ -73,6 +86,7 @@ export class GymRepository implements IGymRepository {
     type: string;
     location: string | null;
     capacity: number | null;
+    userId: string;
     createdAt: Date;
     updatedAt: Date;
   }): Gym {
@@ -82,6 +96,7 @@ export class GymRepository implements IGymRepository {
       data.type.toUpperCase() as GymType,
       data.location,
       data.capacity,
+      data.userId,
       data.createdAt,
       data.updatedAt
     );
