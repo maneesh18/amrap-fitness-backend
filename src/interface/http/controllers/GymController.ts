@@ -36,7 +36,6 @@ export class GymController {
     const currentUserId = req.user?.id;
     if (!currentUserId) {
       throw new UnauthorizedError('Unauthorized');
-      return;
     }
     dto.userId = currentUserId;
     try {

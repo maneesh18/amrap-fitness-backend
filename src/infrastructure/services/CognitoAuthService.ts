@@ -51,16 +51,28 @@ export class CognitoAuthService {
   }
 
   async signIn(email: string, password: string) {
+    const authParams: Record<string, string> = {
+      USERNAME: email,
+      PASSWORD: password,
+    };
+
+    // Only add SECRET_HASH if client secret is configured
+    const secretHash = this.calculateSecretHash(email);
+    if (secretHash) {
+      authParams.SECRET_HASH = secretHash;
+    }
+
     const command = new InitiateAuthCommand({
       AuthFlow: "USER_PASSWORD_AUTH",
       ClientId: this.clientId,
-      AuthParameters: {
-        USERNAME: email,
-        PASSWORD: password,
-        SECRET_HASH: this.calculateSecretHash(email),
-      },
+      AuthParameters: authParams,
     });
+    
     const response = await this.client.send(command);
+    if (!response.AuthenticationResult) {
+      throw new Error('Authentication failed: No authentication result');
+    }
+    
     return response.AuthenticationResult; 
   }
 

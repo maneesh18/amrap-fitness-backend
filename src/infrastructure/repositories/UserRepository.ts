@@ -24,11 +24,16 @@ export class UserRepository implements IUserRepository {
       name: user.name,
       email: user.email,
       dateOfBirth: user.dateOfBirth,
-      role: user.role,
+      role: user.role, // This will be 'USER' or 'MANAGER' as string
       fitnessGoal: user.fitnessGoal.toLowerCase() as 'strength' | 'hypertrophy' | 'endurance',
     };
-    // console.log('Saving user data:', data);
-    const saved = await prisma.user.create({ data });
+    
+    const saved = await prisma.user.upsert({
+      where: { id: user.id },
+      create: data,
+      update: data
+    });
+    
     return this.toDomain(saved);
   }
 
@@ -46,17 +51,20 @@ export class UserRepository implements IUserRepository {
     email: string;
     dateOfBirth: Date;
     fitnessGoal: string;
-    role: UserRole
+    role: string; 
     createdAt: Date;
     updatedAt: Date;
   }): User {
+    // Map the role string to the UserRole enum
+    const role = data.role === 'USER' ? UserRole.USER : UserRole.MANAGER;
+    
     return new User(
       data.id,
       data.name,
       data.email,
       data.dateOfBirth,
-      data.fitnessGoal.toUpperCase() as FitnessGoal,
-      data.role,
+      data.fitnessGoal as FitnessGoal,
+      role,
       data.createdAt,
       data.updatedAt
     );
