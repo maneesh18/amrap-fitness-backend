@@ -22,14 +22,7 @@ export function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Swagger documentation
-  const swaggerUiOptions = {
-    swaggerOptions: {
-      url: '/api-docs/swagger.json',
-    },
-  };
-  
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   // Health check
   app.get('/health', (req, res) => {
