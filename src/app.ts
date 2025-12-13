@@ -11,6 +11,9 @@ import { userController, gymController, membershipController, authController } f
 import { AuthMiddleware } from './interface/http/middleware/AuthMiddleware';
 
 const app = express();
+const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css";
+const JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js";
+const JS_PRESET_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js";
 
 export function createApp(): Express {
 
@@ -22,8 +25,14 @@ export function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      customCssUrl: CSS_URL,
+      customJs: [JS_URL, JS_PRESET_URL],
+    })
+  );
   // Health check
   app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
