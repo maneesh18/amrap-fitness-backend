@@ -1,5 +1,5 @@
 import { Membership } from '../../domain/entities/Membership';
-import { User, FitnessGoal } from '../../domain/entities/User';
+import { User, FitnessGoal, UserRole } from '../../domain/entities/User';
 import { Gym, GymType } from '../../domain/entities/Gym';
 import { IMembershipRepository } from '../../domain/repositories/IMembershipRepository';
 import { prisma } from '../database/prisma';
@@ -90,6 +90,7 @@ export class MembershipRepository implements IMembershipRepository {
     email: string;
     dateOfBirth: Date;
     fitnessGoal: string;
+    role?: string;
     createdAt: Date;
     updatedAt: Date;
   }): User {
@@ -99,6 +100,7 @@ export class MembershipRepository implements IMembershipRepository {
       data.email,
       data.dateOfBirth,
       data.fitnessGoal.toUpperCase() as FitnessGoal,
+      (data.role?.toUpperCase() as UserRole) || UserRole.USER,
       data.createdAt,
       data.updatedAt
     );
@@ -110,6 +112,7 @@ export class MembershipRepository implements IMembershipRepository {
     type: string;
     location: string | null;
     capacity: number | null;
+    userId: string;
     createdAt: Date;
     updatedAt: Date;
   }): Gym {
@@ -119,6 +122,7 @@ export class MembershipRepository implements IMembershipRepository {
       data.type.toUpperCase() as GymType,
       data.location,
       data.capacity,
+      data.userId,
       data.createdAt,
       data.updatedAt
     );

@@ -25,13 +25,18 @@ export class UpdateGymUseCase {
       }
     }
 
+    // Update the gym properties
     gym.update(
       dto.name,
       dto.type as GymType | undefined,
-      dto.userId,
       dto.location,
       dto.capacity
     );
+    
+    // If updating the manager, set the userId directly
+    if (dto.userId) {
+      gym.userId = dto.userId;
+    }
 
     return await this.gymRepository.update(gym);
   }

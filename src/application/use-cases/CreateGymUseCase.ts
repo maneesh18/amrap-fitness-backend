@@ -12,15 +12,29 @@ export class CreateGymUseCase {
   ) {}
 
   async execute(dto: CreateGymDTO): Promise<Gym> {
-    // Verify manager exists
+    // Verify manager exists and get the user ID
+    if (!dto.userId) {
+      throw new Error('User ID is required');
+    }
+    
     const manager = await this.userRepository.findById(dto.userId);
     if (!manager) {
       throw new EntityNotFoundError('User', dto.userId);
     }
 
+    // Ensure required fields are present
+    if (!dto.name) {
+      throw new Error('Gym name is required');
+    }
+    
+    if (!dto.type) {
+      throw new Error('Gym type is required');
+    }
+
+    // Create the gym with the required fields
     const gym = Gym.create(
       dto.name,
-      dto.type as GymType,
+      dto.type,
       dto.userId,
       dto.location,
       dto.capacity
