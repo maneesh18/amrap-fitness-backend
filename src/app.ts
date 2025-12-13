@@ -33,6 +33,7 @@ app.use(
       customJs: [JS_URL, JS_PRESET_URL],
     })
   );
+  
   // Health check
   app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
